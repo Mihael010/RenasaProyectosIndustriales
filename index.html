@@ -2295,50 +2295,10 @@
 
         // --- FUNCIÓN PARA ABRIR ENLACE DIRECTO EN GOOGLE DRIVE (MEJORADA) ---
         window.openDriveLink = function(fileData) {
-            if (!fileData) return;
-            
-            // 1. ESTRATEGIA PRINCIPAL: Usar el enlace directo guardado (si existe)
-            if (fileData.directLink && fileData.directLink.includes('drive.google.com')) {
-                window.open(fileData.directLink, '_blank');
-                notify(`Abriendo archivo en Drive...`, 'success');
-                return;
-            }
-
-            // 2. Segunda estrategia: Intentar obtener un ID de Google Drive válido
-            let extractedId = fileData.driveId || fileData.id || fileData.fileId;
-            let hasRealDriveId = extractedId && String(extractedId).length > 15 && !String(extractedId).startsWith('local-') && !String(extractedId).startsWith('drive-blind-');
-
-            // 3. Si no tenemos ID, intentar extraerlo de la URL guardada
-            if (!hasRealDriveId && fileData.viewLink && fileData.viewLink.includes('drive.google.com')) {
-                const match = fileData.viewLink.match(/\/d\/([a-zA-Z0-9_-]+)/);
-                if (match && match[1]) {
-                    extractedId = match[1];
-                    hasRealDriveId = true;
-                }
-            }
-
-            // 4. Si tenemos un ID real, construir y abrir el enlace directo
-            if (hasRealDriveId) {
-                let directUrl = `https://drive.google.com/file/d/${extractedId}/view`;
-                window.open(directUrl, '_blank');
-                notify(`Abriendo archivo en Drive...`, 'success');
-                return;
-            }
-
-            // 5. FALLBACK: Si tenemos un enlace web que parece de Drive, lo usamos
-            if (fileData.viewLink && fileData.viewLink.includes('drive.google.com')) {
-                window.open(fileData.viewLink, '_blank');
-                return;
-            }
-
-            // 6. ÚLTIMO RECURSO: Intentar una búsqueda exacta en Drive con el nombre del archivo
-            if (fileData.name) {
-                const searchUrl = `https://drive.google.com/drive/search?q=${encodeURIComponent(fileData.name)}`;
-                window.open(searchUrl, '_blank');
-                notify("No se encontró enlace directo. Redirigiendo a búsqueda...", "info");
-            } else {
-                notify("No se pudo determinar la ubicación del archivo", "error");
-            }
+            // Redirección global a la carpeta principal solicitada
+            const targetUrl = 'https://drive.google.com/drive/folders/14DTvjPWuR3MaVGOZRjoZfLr3aC_4rj_s?usp=sharing';
+            window.open(targetUrl, '_blank');
+            notify("Abriendo repositorio en Google Drive...", "success");
         };
 
         // Handlers para abrir enlaces directos
