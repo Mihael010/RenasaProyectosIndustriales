@@ -3744,14 +3744,64 @@
             charts.pie = new Chart(ctxPie.getContext('2d'), { 
                 type: 'doughnut', 
                 data: { 
-                    labels: ['Equipos', 'Mano de Obra', 'Servicios', 'Otros'], 
-                    datasets: [{ data: [0,0,0,0], backgroundColor: ['#1e40af', '#3b82f6', '#60a5fa', '#bfdbfe'], borderWidth: 0 }] 
+                    labels: ['Proyectos Estruct.', 'Mantenimiento', 'Construcción', 'Otras Iniciativas'], 
+                    datasets: [{ 
+                        data: [0,0,0,0], 
+                        backgroundColor: ['#4f46e5', '#10b981', '#f59e0b', '#f43f5e'], 
+                        borderWidth: 3, 
+                        borderColor: '#ffffff',
+                        hoverOffset: 12,
+                        borderRadius: 6
+                    }] 
                 }, 
                 options: { 
                     maintainAspectRatio: false, 
-                    cutout: '75%', 
-                    plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } } } 
-                } 
+                    cutout: '80%', 
+                    layout: { padding: 15 },
+                    plugins: { 
+                        legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8, font: { weight: 'bold', family: "'Plus Jakarta Sans', sans-serif" } } },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                            titleFont: { size: 11, family: "'Plus Jakarta Sans', sans-serif", weight: 'bold' },
+                            bodyFont: { size: 13, family: "'JetBrains Mono', monospace", weight: 'bold' },
+                            padding: 12,
+                            cornerRadius: 12,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) label += ': ';
+                                    if (context.parsed !== null) label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(context.parsed);
+                                    return label;
+                                }
+                            }
+                        }
+                    } 
+                },
+                plugins: [{
+                    id: 'centerTextPlugin',
+                    beforeDraw: function(chart) {
+                        var width = chart.width, height = chart.height, ctx = chart.ctx;
+                        ctx.restore();
+                        var total = chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                        if (total === 0) return;
+                        var fontSizeText = (height / 140).toFixed(2);
+                        ctx.font = "900 " + fontSizeText + "em 'JetBrains Mono', monospace";
+                        ctx.textBaseline = "middle";
+                        ctx.fillStyle = "#1e293b";
+                        var text = "$" + (total >= 1000000 ? (total/1000000).toFixed(1) + "M" : (total/1000).toFixed(1) + "k");
+                        var textX = Math.round((width - ctx.measureText(text).width) / 2);
+                        var textY = height / 2 - 10;
+                        ctx.fillText(text, textX, textY);
+                        var fontSizeLabel = (height / 350).toFixed(2);
+                        ctx.font = "800 " + fontSizeLabel + "em 'Plus Jakarta Sans', sans-serif";
+                        ctx.fillStyle = "#94a3b8";
+                        var label = "CAPEX TOTAL";
+                        var labelX = Math.round((width - ctx.measureText(label).width) / 2);
+                        var labelY = height / 2 + 15;
+                        ctx.fillText(label, labelX, labelY);
+                        ctx.save();
+                    }
+                }]
             });
             
             charts.polar = new Chart(ctxPolar.getContext('2d'), { 
@@ -3773,20 +3823,33 @@
         function updateBIChartsData(filteredData) {
             if (!charts.radar) return;
             let totalCapex = 0, totalTasks = 0, doneTasks = 0, avgProgress = 0;
+            let cProy = 0, cMtto = 0, cTc = 0, cOther = 0;
+            
             filteredData.forEach(p => {
-                totalCapex += p.budget.reduce((a, b) => a + b.amount, 0);
-                totalTasks += p.tasks.length;
-                doneTasks += p.tasks.filter(t => t.status === 'done').length;
-                avgProgress += parseInt(p.progress);
+                const pBudget = p.budget.reduce((a, b) => a + b.amount, 0);
+                totalCapex += pBudget;
+                totalTasks += p.tasks ? p.tasks.length : 0;
+                doneTasks += p.tasks ? p.tasks.filter(t => t.status === 'done').length : 0;
+                avgProgress += parseInt(p.progress || 0);
+
+                // Clasificación Dinámica del Presupuesto
+                const codeUpper = (p.code || "").toUpperCase();
+                if(codeUpper.includes('PROY')) cProy += pBudget;
+                else if(codeUpper.includes('MTTO')) cMtto += pBudget;
+                else if(codeUpper.includes('TC')) cTc += pBudget;
+                else cOther += pBudget;
             });
+
             const efficiency = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
             const finalAvg = filteredData.length > 0 ? Math.round(avgProgress / filteredData.length) : 0;
+            
             const capexEl = document.getElementById('bi-stat-capex'); if(capexEl) capexEl.textContent = `$ ${totalCapex.toLocaleString()}`;
             const milEl = document.getElementById('bi-stat-milestones'); if(milEl) milEl.textContent = `${efficiency}%`;
             const healthEl = document.getElementById('bi-stat-health'); if(healthEl) healthEl.textContent = `${finalAvg}%`;
             const barEl = document.getElementById('bi-health-bar'); if(barEl) barEl.style.width = `${finalAvg}%`;
+            
             charts.radar.data.datasets[0].data = [efficiency, 85, 90, 75, finalAvg]; charts.radar.update();
-            charts.pie.data.datasets[0].data = [totalCapex * 0.45, totalCapex * 0.25, totalCapex * 0.2, totalCapex * 0.1]; charts.pie.update();
+            charts.pie.data.datasets[0].data = [cProy, cMtto, cTc, cOther]; charts.pie.update();
             charts.polar.data.datasets[0].data = [15, 25, 35, 10, 20]; charts.polar.update();
         }
 
