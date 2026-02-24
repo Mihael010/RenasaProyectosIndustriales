@@ -3702,45 +3702,139 @@
 
         // --- FUNCIONES DE RENDERIZADO DE VISTAS ADICIONALES ---
         function initBIAnalytics() {
-            const ctxRadar = document.getElementById('chart-radar'), ctxSCurve = document.getElementById('chart-s-curve'), ctxPie = document.getElementById('chart-pie-capex'), ctxPolar = document.getElementById('chart-polar-resources');
+            const ctxRadar = document.getElementById('chart-radar');
+            const ctxSCurve = document.getElementById('chart-s-curve');
+            const ctxPie = document.getElementById('chart-pie-capex');
+            const ctxPolar = document.getElementById('chart-polar-resources');
+            
             if(!ctxRadar || !ctxSCurve || !ctxPie || !ctxPolar) return;
             
             // Configuración Global Profesional Chart.js
             Chart.defaults.font.family = "'Plus Jakarta Sans', 'Segoe UI', sans-serif";
             Chart.defaults.color = '#64748b';
-            Chart.defaults.scale.grid.color = '#f1f5f9'; // Líneas de cuadrícula muy tenues
+            Chart.defaults.scale.grid.color = 'rgba(241, 245, 249, 0.5)'; // Grid ultra tenue
             
             Object.values(charts).forEach(c => { if(c && c.destroy) c.destroy(); });
             
-            charts.radar = new Chart(ctxRadar.getContext('2d'), { 
+            // Tooltip Corporativo Reutilizable (Dark Glass)
+            const corporateTooltip = {
+                backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                titleFont: { size: 12, family: "'Plus Jakarta Sans', sans-serif", weight: '800', letterSpacing: 0.5 },
+                bodyFont: { size: 13, family: "'JetBrains Mono', monospace", weight: '600' },
+                padding: 14,
+                cornerRadius: 12,
+                boxPadding: 8,
+                usePointStyle: true,
+                borderColor: 'rgba(255, 255, 255, 0.1)',
+                borderWidth: 1,
+                displayColors: true
+            };
+
+            // Gradientes Dinámicos en Canvas
+            const sCurveCtx = ctxSCurve.getContext('2d');
+            let sCurveGradient = sCurveCtx.createLinearGradient(0, 0, 0, 350);
+            sCurveGradient.addColorStop(0, 'rgba(79, 70, 229, 0.35)'); // Indigo
+            sCurveGradient.addColorStop(1, 'rgba(79, 70, 229, 0.0)');
+
+            const radarCtx = ctxRadar.getContext('2d');
+            let radarGradient = radarCtx.createLinearGradient(0, 0, 0, 350);
+            radarGradient.addColorStop(0, 'rgba(225, 29, 72, 0.4)'); // Rose
+            radarGradient.addColorStop(1, 'rgba(225, 29, 72, 0.05)');
+            
+            // 1. RADAR (Eficiencia Operativa)
+            charts.radar = new Chart(radarCtx, { 
                 type: 'radar', 
                 data: { 
-                    labels: ['Plazos', 'Calidad', 'Presupuesto', 'Recursos', 'Alcance'], 
-                    datasets: [{ label: 'Performance', data: [0,0,0,0,0], backgroundColor: 'rgba(225, 29, 72, 0.2)', borderColor: '#e11d48', borderWidth: 2, pointBackgroundColor: '#e11d48' }] 
+                    labels: ['Cumplimiento', 'Calidad', 'Presupuesto', 'Recursos', 'Alcance'], 
+                    datasets: [{ 
+                        label: 'Índice de Performance', 
+                        data: [0,0,0,0,0], 
+                        backgroundColor: radarGradient, 
+                        borderColor: '#e11d48', 
+                        borderWidth: 2.5, 
+                        pointBackgroundColor: '#ffffff',
+                        pointBorderColor: '#e11d48',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }] 
                 }, 
                 options: { 
                     maintainAspectRatio: false, 
-                    scales: { r: { beginAtZero: true, max: 100, ticks: { display: false } } }, 
-                    plugins: { legend: { display: false } } 
+                    scales: { 
+                        r: { 
+                            beginAtZero: true, max: 100, 
+                            ticks: { display: false, stepSize: 20 },
+                            grid: { color: 'rgba(0,0,0,0.05)', circular: true },
+                            angleLines: { color: 'rgba(0,0,0,0.05)' },
+                            pointLabels: { font: { size: 10, weight: '800' }, color: '#475569' }
+                        } 
+                    }, 
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: corporateTooltip
+                    },
+                    animation: { duration: 1500, easing: 'easeOutQuart' }
                 } 
             });
             
-            charts.sCurve = new Chart(ctxSCurve.getContext('2d'), { 
+            // 2. S-CURVE (Avance Acumulado)
+            charts.sCurve = new Chart(sCurveCtx, { 
                 type: 'line', 
                 data: { 
                     labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'], 
                     datasets: [
-                        { label: 'Planificado', data: [5, 12, 25, 40, 55, 70, 85, 95, 100, 100, 100, 100], borderColor: '#cbd5e1', borderDash: [5, 5], borderWidth: 2, fill: false, pointRadius: 0 }, 
-                        { label: 'Ejecutado', data: [4, 10, 22, 38, 50], borderColor: '#4f46e5', backgroundColor: 'rgba(79,70,229,0.1)', borderWidth: 3, fill: true, tension: 0.4 }
+                        { 
+                            label: 'Línea Base (Planificado)', 
+                            data: [5, 12, 25, 40, 55, 70, 85, 95, 100, 100, 100, 100], 
+                            borderColor: '#cbd5e1', 
+                            borderDash: [6, 4], 
+                            borderWidth: 2.5, 
+                            fill: false, 
+                            pointRadius: 0,
+                            pointHitRadius: 10
+                        }, 
+                        { 
+                            label: 'Avance Real (Ejecutado)', 
+                            data: [4, 10, 22, 38, 50], 
+                            borderColor: '#4f46e5', 
+                            backgroundColor: sCurveGradient, 
+                            borderWidth: 3, 
+                            fill: true, 
+                            tension: 0.4,
+                            pointBackgroundColor: '#ffffff',
+                            pointBorderColor: '#4f46e5',
+                            pointBorderWidth: 2,
+                            pointRadius: 4,
+                            pointHoverRadius: 7
+                        }
                     ] 
                 }, 
                 options: { 
                     maintainAspectRatio: false, 
-                    plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } } }, 
-                    scales: { y: { beginAtZero: true, max: 100, border: {display: false} }, x: { grid: {display: false}, border: {display: false} } } 
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: { 
+                        legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8, padding: 20, font: { weight: '700' } } },
+                        tooltip: corporateTooltip
+                    }, 
+                    scales: { 
+                        y: { 
+                            beginAtZero: true, max: 100, 
+                            border: { display: false },
+                            grid: { color: '#f1f5f9', drawTicks: false },
+                            ticks: { padding: 10, font: { family: "'JetBrains Mono', monospace", size: 10 }, callback: (val) => val + '%' }
+                        }, 
+                        x: { 
+                            border: { display: false },
+                            grid: { display: false },
+                            ticks: { padding: 10, font: { weight: '600' } }
+                        } 
+                    },
+                    animation: { duration: 2000, easing: 'easeOutQuart' }
                 } 
             });
             
+            // 3. PIE CHART (Inversión CapEx)
             charts.pie = new Chart(ctxPie.getContext('2d'), { 
                 type: 'doughnut', 
                 data: { 
@@ -3748,24 +3842,20 @@
                     datasets: [{ 
                         data: [0,0,0,0], 
                         backgroundColor: ['#4f46e5', '#10b981', '#f59e0b', '#f43f5e'], 
-                        borderWidth: 3, 
+                        borderWidth: 4, 
                         borderColor: '#ffffff',
-                        hoverOffset: 12,
-                        borderRadius: 6
+                        hoverOffset: 8,
+                        borderRadius: 4
                     }] 
                 }, 
                 options: { 
                     maintainAspectRatio: false, 
-                    cutout: '80%', 
-                    layout: { padding: 15 },
+                    cutout: '75%', 
+                    layout: { padding: 10 },
                     plugins: { 
-                        legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8, font: { weight: 'bold', family: "'Plus Jakarta Sans', sans-serif" } } },
+                        legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8, padding: 20, font: { weight: '800' } } },
                         tooltip: {
-                            backgroundColor: 'rgba(15, 23, 42, 0.95)',
-                            titleFont: { size: 11, family: "'Plus Jakarta Sans', sans-serif", weight: 'bold' },
-                            bodyFont: { size: 13, family: "'JetBrains Mono', monospace", weight: 'bold' },
-                            padding: 12,
-                            cornerRadius: 12,
+                            ...corporateTooltip,
                             callbacks: {
                                 label: function(context) {
                                     let label = context.label || '';
@@ -3775,7 +3865,8 @@
                                 }
                             }
                         }
-                    } 
+                    },
+                    animation: { animateScale: true, animateRotate: true, duration: 1500, easing: 'easeOutQuart' }
                 },
                 plugins: [{
                     id: 'centerTextPlugin',
@@ -3787,33 +3878,65 @@
                         var fontSizeText = (height / 140).toFixed(2);
                         ctx.font = "900 " + fontSizeText + "em 'JetBrains Mono', monospace";
                         ctx.textBaseline = "middle";
-                        ctx.fillStyle = "#1e293b";
+                        ctx.fillStyle = "#0f172a";
                         var text = "$" + (total >= 1000000 ? (total/1000000).toFixed(1) + "M" : (total/1000).toFixed(1) + "k");
                         var textX = Math.round((width - ctx.measureText(text).width) / 2);
-                        var textY = height / 2 - 10;
+                        var textY = height / 2 - 12;
                         ctx.fillText(text, textX, textY);
                         var fontSizeLabel = (height / 350).toFixed(2);
                         ctx.font = "800 " + fontSizeLabel + "em 'Plus Jakarta Sans', sans-serif";
-                        ctx.fillStyle = "#94a3b8";
+                        ctx.fillStyle = "#64748b";
                         var label = "CAPEX TOTAL";
                         var labelX = Math.round((width - ctx.measureText(label).width) / 2);
-                        var labelY = height / 2 + 15;
+                        var labelY = height / 2 + 16;
                         ctx.fillText(label, labelX, labelY);
                         ctx.save();
                     }
                 }]
             });
             
+            // 4. POLAR AREA (Balance de Recursos)
             charts.polar = new Chart(ctxPolar.getContext('2d'), { 
                 type: 'polarArea', 
                 data: { 
-                    labels: ['Mecánica', 'Eléctrica', 'TI', 'Logística', 'Control'], 
-                    datasets: [{ data: [0,0,0,0,0], backgroundColor: ['rgba(109, 40, 217, 0.8)', 'rgba(139, 92, 246, 0.8)', 'rgba(167, 139, 250, 0.8)', 'rgba(196, 181, 253, 0.8)', 'rgba(237, 233, 254, 0.8)'], borderWidth: 0 }] 
+                    labels: ['Mecánica', 'Eléctrica', 'Civil', 'TI / Control', 'Logística'], 
+                    datasets: [{ 
+                        data: [0,0,0,0,0], 
+                        // Paleta profesional monocromática análoga (Azules a Esmeraldas)
+                        backgroundColor: [
+                            'rgba(79, 70, 229, 0.75)',  // Indigo
+                            'rgba(14, 165, 233, 0.75)', // Sky
+                            'rgba(16, 185, 129, 0.75)', // Emerald
+                            'rgba(245, 158, 11, 0.75)', // Amber
+                            'rgba(99, 102, 241, 0.75)'  // Light Indigo
+                        ], 
+                        borderWidth: 3,
+                        borderColor: '#ffffff',
+                        hoverBorderColor: '#ffffff',
+                        hoverBackgroundColor: [
+                            'rgba(79, 70, 229, 1)', 
+                            'rgba(14, 165, 233, 1)', 
+                            'rgba(16, 185, 129, 1)', 
+                            'rgba(245, 158, 11, 1)', 
+                            'rgba(99, 102, 241, 1)'
+                        ]
+                    }] 
                 }, 
                 options: { 
                     maintainAspectRatio: false, 
-                    scales: { r: { ticks: { display: false } } },
-                    plugins: { legend: { position: 'right', labels: { usePointStyle: true, boxWidth: 8 } } } 
+                    layout: { padding: 10 },
+                    scales: { 
+                        r: { 
+                            ticks: { display: false },
+                            grid: { color: 'rgba(0,0,0,0.05)' },
+                            angleLines: { color: 'rgba(0,0,0,0.05)' }
+                        } 
+                    },
+                    plugins: { 
+                        legend: { position: 'right', labels: { usePointStyle: true, boxWidth: 8, padding: 15, font: { weight: '700' } } },
+                        tooltip: corporateTooltip
+                    },
+                    animation: { duration: 1500, easing: 'easeOutQuart' }
                 } 
             });
             
