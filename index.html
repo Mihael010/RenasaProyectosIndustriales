@@ -4779,78 +4779,111 @@
                 </div>
             `;
 
-            // Lógica GANTT AVANZADA Y SIMÉTRICA (POR MESES DE ENE A DIC)
-            let minDate = p.start ? new Date(p.start) : new Date();
-            let maxDate = p.end ? new Date(p.end) : new Date(minDate.getTime() + 60*24*60*60*1000);
+            // Lógica GANTT DINÁMICA (Ajustada a las fechas reales de los hitos)
+            let minTaskDate = null;
+            let maxTaskDate = null;
             const allTasks = p.tasks || [];
+            
             allTasks.forEach(t => {
-                if(t.start && t.end) {
-                    let ts = new Date(t.start); let te = new Date(t.end);
-                    if(ts < minDate) minDate = ts; if(te > maxDate) maxDate = te;
+                if(t.start) {
+                    let ts = new Date(t.start + "T00:00:00"); 
+                    if(!minTaskDate || ts < minTaskDate) minTaskDate = ts;
+                }
+                if(t.end) {
+                    let te = new Date(t.end + "T23:59:59");
+                    if(!maxTaskDate || te > maxTaskDate) maxTaskDate = te;
                 }
             });
 
-            // Forzar rango de Enero a Diciembre para que se extienda por toda la hoja de manera horizontal
-            let minYear = minDate.getFullYear();
-            let maxYear = maxDate.getFullYear();
-            
-            // Ajustar a 1 de Enero del año de inicio y 31 de Diciembre del año de fin
-            minDate = new Date(minYear, 0, 1);
-            maxDate = new Date(maxYear, 12, 0); 
+            // Usar fechas de hitos prioritariamente. Si no hay hitos, usar las del proyecto.
+            let minDate = minTaskDate ? new Date(minTaskDate) : (p.start ? new Date(p.start + "T00:00:00") : new Date());
+            let maxDate = maxTaskDate ? new Date(maxTaskDate) : (p.end ? new Date(p.end + "T23:59:59") : new Date(minDate.getTime() + 60*24*60*60*1000));
+
+            // Ajustar al primer día del mes inicial y al último del mes final
+            minDate = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
+            maxDate = new Date(maxDate.getFullYear(), maxDate.getMonth() + 1, 0, 23, 59, 59);
 
             let totalMs = maxDate.getTime() - minDate.getTime();
             if(totalMs <= 0) totalMs = 86400000;
 
-            // Generar Etiquetas de Meses (Siempre con año para claridad profesional)
+            // Generar Etiquetas de Meses
             const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
             let monthsList = [];
             let curr = new Date(minDate);
             while(curr <= maxDate) {
-                // Siempre mostrar el año (Ej: Ene '24)
                 monthsList.push(`${monthNames[curr.getMonth()]} '${curr.getFullYear().toString().substring(2)}`);
                 curr.setMonth(curr.getMonth() + 1);
             }
 
-            // Mostrar todos los meses asegurando distribución horizontal completa
-            let step = Math.ceil(monthsList.length / 12); 
-            
-            let ganttHeaderHtml = `
-            <div style="display: flex; border-bottom: 2px solid ${C_NAVY}; padding-bottom: 4px; margin-bottom: 6px; align-items: flex-end;">
-                <div style="width: 28%; font-size: 8px; font-weight: bold; color: ${C_NAVY};">Fases / Hitos Técnicos</div>
-                <div style="width: 72%; display: flex; justify-content: space-between; font-size: 8px; font-weight: bold; color: ${C_NAVY}; text-transform: uppercase;">
-                    ${monthsList.map((m, i) => i % step === 0 ? `<div style="flex: 1; text-align: center;">${m}</div>` : `<div style="flex: 1;"></div>`).join('')}
+            // ESTRUCTURA: Bloques Div simples con Print Color Adjust para perfecta compatibilidad PDF
+            let ganttHtml = `
+            <div style="width: 100%; border: 1px solid #e5e7eb; border-radius: 4px; overflow: hidden; font-family: Arial, sans-serif; background-color: white; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                
+                <!-- ENCABEZADO -->
+                <div style="display: flex; background-color: white !important; color: black !important; border-bottom: 1.5px solid black; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                    <div style="width: 32%; padding: 6px 8px; font-size: 8px; font-weight: bold; box-sizing: border-box; background-color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                        Fases / Hitos Técnicos
+                    </div>
+                    <div style="width: 68%; display: flex; background-color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                        ${monthsList.map(m => `<div style="flex: 1; text-align: center; padding: 6px 0; font-size: 8px; font-weight: bold; box-sizing: border-box;">${m}</div>`).join('')}
+                    </div>
                 </div>
-            </div>`;
 
-            // HTML de la grilla vertical de fondo
-            let gridHtml = `<div style="position:absolute; width:100%; height:100%; display:flex; top:0; left:0; z-index: 0;">
-                ${monthsList.map((_, i) => `<div style="flex: 1; border-right: ${i < monthsList.length - 1 ? '1px dashed #e2e8f0' : 'none'}; box-sizing: border-box;"></div>`).join('')}
-            </div>`;
+                <!-- CUERPO DEL GANTT -->
+                <div style="position: relative; display: block; background-color: white;">
+                    
+                    <!-- Grilla Global (Líneas verticales celestes eliminadas) -->
+                    <div style="position: absolute; top: 0; left: 32%; right: 0; bottom: 0; display: flex; pointer-events: none; z-index: 0;">
+                        ${monthsList.map((_, i) => `<div style="flex: 1; box-sizing: border-box;"></div>`).join('')}
+                    </div>
 
-            let ganttHtml = ganttHeaderHtml + allTasks.map(t => {
-                let ts = t.start ? new Date(t.start).getTime() : minDate.getTime();
-                let te = t.end ? new Date(t.end).getTime() : ts + (totalMs * 0.1);
+                    <!-- Filas -->
+                    <div style="position: relative; z-index: 1;">`;
+
+            allTasks.forEach((t, index) => {
+                let ts = t.start ? new Date(t.start + "T00:00:00").getTime() : minDate.getTime();
+                let te = t.end ? new Date(t.end + "T23:59:59").getTime() : ts + (totalMs * 0.1);
                 
                 let leftPct = Math.max(0, ((ts - minDate.getTime()) / totalMs) * 100);
-                let widthPct = Math.max(2, ((te - ts) / totalMs) * 100);
+                let widthPct = Math.max(1.5, ((te - ts) / totalMs) * 100);
                 if (leftPct + widthPct > 100) widthPct = 100 - leftPct;
 
-                let barStyle = `background: ${C_ORANGE}; border: 1px solid #c2631c; display: flex; align-items: center; justify-content: center; color: white; font-size: 7px; font-weight: bold; overflow: hidden; white-space: nowrap;`;
+                let progress = parseInt(t.progress) || 0;
+                let isComplete = progress === 100;
+                
+                // COLORES: Naranja intenso con fondo tenue, o Verde si está completada
+                let bgBar = isComplete ? '#d1fae5' : '#ffedd5'; 
+                let fillBar = isComplete ? '#10b981' : '#ea580c'; 
+                let borderBar = isComplete ? '#059669' : '#c2410c'; 
+                let textColor = 'black'; 
+                let iconColor = isComplete ? '#10b981' : C_ORANGE;
 
-                return `
-                <div style="display: flex; align-items: stretch; border-bottom: 1px solid #f1f5f9; padding: 6px 0;">
-                    <div style="width: 28%; font-size: 8.5px; font-weight: bold; color: ${C_NAVY}; padding-right: 8px; display: flex; justify-content: space-between; align-items: flex-start;">
-                        <span style="white-space: normal; word-break: break-word; line-height: 1.3; max-width: 100%;" title="${t.name}">
-                            <span style="color:${C_ORANGE}; margin-right:2px;">❯</span>${t.name}
-                        </span>
+                ganttHtml += `
+                        <div style="display: flex; border-bottom: 1px solid #e5e7eb; page-break-inside: avoid; background-color: ${index % 2 === 0 ? 'white' : '#f9fafb'}; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                            <div style="width: 32%; padding: 6px 8px; font-size: 8px; font-weight: bold; color: ${C_NAVY}; box-sizing: border-box; display: flex; align-items: center;">
+                                <span style="color:${iconColor}; margin-right:4px; font-size: 10px;">❯</span>
+                                <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${t.name}">${t.name}</span>
+                            </div>
+                            <div style="width: 68%; padding: 4px 0; display: flex; align-items: center; box-sizing: border-box;">
+                                <div style="width: 100%; height: 12px; display: flex; position: relative;">
+                                    <div style="width: ${leftPct}%; flex-shrink: 0;"></div>
+                                    <!-- BARRA CONTENEDORA (Fondo Tenue) -->
+                                    <div style="width: ${widthPct}%; background-color: ${bgBar} !important; border: 1px solid ${borderBar}; border-radius: 2px; position: relative; display: flex; overflow: hidden; box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                                        <!-- BARRA DE LLENADO INTERNA (Naranja/Verde Intenso) -->
+                                        <div style="width: ${progress}%; height: 100%; background-color: ${fillBar} !important; border-right: ${progress > 0 && progress < 100 ? '1px solid ' + borderBar : 'none'}; -webkit-print-color-adjust: exact; print-color-adjust: exact;"></div>
+                                        <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 7px; font-weight: bold; color: ${textColor}; text-shadow: 0 0 2px rgba(255,255,255,0.8);">
+                                            ${progress}%
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+            });
+
+            ganttHtml += `
                     </div>
-                    <div style="width: 72%; display: flex; height: 12px; position: relative; background: #fafafa; border-radius: 2px; overflow: hidden; margin-top: auto; margin-bottom: auto;">
-                        ${gridHtml}
-                        <div style="width: ${leftPct}%;"></div>
-                        <div style="width: ${widthPct}%; ${barStyle} height: 100%; border-radius: 3px; position: relative; z-index: 10; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">${t.progress > 0 ? t.progress + '%' : ''}</div>
-                    </div>
-                </div>`;
-            }).join('');
+                </div>
+            </div>`;
 
             // Archivos por Carpeta
             let filesTableHtml = '';
@@ -4859,17 +4892,17 @@
                 activeFolders.forEach(folder => {
                     const fFiles = (p.files || []).filter(f => f.category === folder.id);
                     filesTableHtml += `
-                        <tr><td colspan="2" style="background: #f8fafc; font-weight: bold; font-size: 8px; padding: 4px; color: ${C_ORANGE}; border-bottom: 1px solid #e2e8f0;">📂 ${folder.label}</td></tr>
+                        <tr style="page-break-inside: avoid;"><td colspan="2" style="background: #f8fafc; font-weight: bold; font-size: 9px; padding: 6px; color: ${C_ORANGE}; border-bottom: 1px solid #e2e8f0;">📂 ${folder.label}</td></tr>
                     `;
                     if(fFiles.length > 0) {
                         fFiles.forEach(f => {
-                            filesTableHtml += `<tr>
-                                <td style="padding: 4px 10px; font-size: 8px; color: ${C_NAVY}; border-bottom: 1px solid #f1f5f9; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">❯ ${f.name}</td>
-                                <td style="padding: 4px; font-size: 7px; color: ${C_GREY}; border-bottom: 1px solid #f1f5f9; text-align: right;">${f.isUploaded ? 'En Nube' : 'Adjunto'}</td>
+                            filesTableHtml += `<tr style="page-break-inside: avoid;">
+                                <td style="padding: 6px 10px; font-size: 9px; color: ${C_NAVY}; border-bottom: 1px solid #f1f5f9; width: 85%;">❯ ${f.name}</td>
+                                <td style="padding: 6px; font-size: 8px; color: ${C_GREY}; border-bottom: 1px solid #f1f5f9; text-align: right; width: 15%;">${f.isUploaded ? 'En Nube' : 'Adjunto'}</td>
                             </tr>`;
                         });
                     } else {
-                        filesTableHtml += `<tr><td colspan="2" style="padding: 4px 10px; font-size: 8px; color: ${C_GREY}; font-style: italic; border-bottom: 1px solid #f1f5f9;">Carpeta vacía</td></tr>`;
+                        filesTableHtml += `<tr style="page-break-inside: avoid;"><td colspan="2" style="padding: 6px 10px; font-size: 9px; color: ${C_GREY}; font-style: italic; border-bottom: 1px solid #f1f5f9;">Carpeta vacía</td></tr>`;
                     }
                 });
             }
@@ -5023,62 +5056,55 @@
                     </div>
                 </div>
 
-                <!-- BOTTOM GRID -->
-                <div style="display: flex; gap: 20px;">
-                    <!-- COLUMNA IZQUIERDA -->
-                    <div style="flex: 0 0 55%;">
-                        ${SectionTitle('Seguimiento de Tareas e Hitos', C_ORANGE)}
-                        
-                        <table style="width: 100%; border-collapse: collapse; text-align: left; border: 1px solid #e2e8f0;">
-                            <thead>
-                                <tr style="background: ${C_NAVY}; color: white; font-size: 10px;">
-                                    <th style="padding: 6px; border-right: 1px solid white; width: 40%;">Nombre de la Tarea</th>
-                                    <th style="padding: 6px; border-right: 1px solid white; width: 15%; text-align: center;">Inicio</th>
-                                    <th style="padding: 6px; border-right: 1px solid white; width: 15%; text-align: center;">Fin</th>
-                                    <th style="padding: 6px; width: 30%; text-align: center;">Estado / Avance</th>
+                <!-- BOTTOM TABLES: TAREAS Y ARCHIVOS (Secuenciales para Paginación Perfecta) -->
+                <div style="width: 100%; margin-bottom: 20px;">
+                    
+                    ${SectionTitle('Seguimiento de Tareas e Hitos', C_ORANGE)}
+                    <table style="width: 100%; border-collapse: collapse; text-align: left; border: 1px solid #e2e8f0; margin-bottom: 25px; page-break-inside: auto;">
+                        <thead style="display: table-header-group;">
+                            <tr style="background: ${C_NAVY}; color: white; font-size: 10px; page-break-inside: avoid;">
+                                <th style="padding: 8px; border-right: 1px solid white; width: 45%;">Nombre de la Tarea</th>
+                                <th style="padding: 8px; border-right: 1px solid white; width: 15%; text-align: center;">Inicio</th>
+                                <th style="padding: 8px; border-right: 1px solid white; width: 15%; text-align: center;">Fin</th>
+                                <th style="padding: 8px; width: 25%; text-align: center;">Estado / Avance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${allTasks.length > 0 ? allTasks.map(t => `
+                                <tr style="border-bottom: 1px solid #e2e8f0; page-break-inside: avoid;">
+                                    <td style="padding: 8px; font-size: 9px; color: ${C_NAVY}; font-weight: bold;">
+                                        <span style="color: ${C_ORANGE};">❯</span> ${t.name}
+                                    </td>
+                                    <td style="padding: 8px; font-size: 9px; color: ${C_GREY}; text-align: center;">${formatDate(t.start)}</td>
+                                    <td style="padding: 8px; font-size: 9px; color: ${C_GREY}; text-align: center;">${formatDate(t.end)}</td>
+                                    <td style="padding: 8px; font-size: 9px; text-align: center;">
+                                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 5px;">
+                                            <span style="color: ${t.status === 'done' ? '#10b981' : (t.status === 'prog' ? C_ORANGE : C_GREY)}; font-weight: bold;">
+                                                ${t.status === 'done' ? 'Completo' : (t.status === 'prog' ? 'En Curso' : 'Pendiente')}
+                                            </span>
+                                            <span style="background: ${C_LIGHT}; padding: 3px 6px; border-radius: 2px; font-weight: bold; font-size: 8px;">${t.progress}%</span>
+                                        </div>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                ${allTasks.length > 0 ? allTasks.map(t => `
-                                    <tr style="border-bottom: 1px solid #e2e8f0;">
-                                        <td style="padding: 6px; font-size: 8.5px; color: ${C_NAVY}; font-weight: bold;">
-                                            <span style="color: ${C_ORANGE};">❯</span> ${t.name}
-                                        </td>
-                                        <td style="padding: 6px; font-size: 8px; color: ${C_GREY}; text-align: center;">${formatDate(t.start)}</td>
-                                        <td style="padding: 6px; font-size: 8px; color: ${C_GREY}; text-align: center;">${formatDate(t.end)}</td>
-                                        <td style="padding: 6px; font-size: 8px; text-align: center;">
-                                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 5px;">
-                                                <span style="color: ${t.status === 'done' ? '#10b981' : (t.status === 'prog' ? C_ORANGE : C_GREY)}; font-weight: bold;">
-                                                    ${t.status === 'done' ? 'Completo' : (t.status === 'prog' ? 'En Curso' : 'Pendiente')}
-                                                </span>
-                                                <span style="background: ${C_LIGHT}; padding: 2px 4px; border-radius: 2px; font-weight: bold;">${t.progress}%</span>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                `).join('') : '<tr><td colspan="4" style="padding: 10px; text-align: center; font-size: 8px; color: #6b7280; font-style: italic;">Sin hitos registrados</td></tr>'}
-                            </tbody>
-                        </table>
-                    </div>
+                            `).join('') : '<tr style="page-break-inside: avoid;"><td colspan="4" style="padding: 10px; text-align: center; font-size: 9px; color: #6b7280; font-style: italic;">Sin hitos registrados</td></tr>'}
+                        </tbody>
+                    </table>
 
-                    <!-- COLUMNA DERECHA -->
-                    <div style="flex: 0 0 42%;">
-                        ${SectionTitle('Archivos y Anexos Adjuntos', C_ORANGE)}
-                        
-                        <table style="width: 100%; border-collapse: collapse; border: 1px solid #e2e8f0;">
-                            <thead>
-                                <tr style="background: ${C_NAVY}; color: white; font-size: 10px;">
-                                    <th style="padding: 6px; text-align: left; border-right: 1px solid white;">Estructura de Directorios</th>
-                                    <th style="padding: 6px; text-align: right;">Estado</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${filesTableHtml}
-                            </tbody>
-                        </table>
-                        
-                        <div style="margin-top: 15px; padding: 10px; background: #fff7ed; border-left: 3px solid ${C_ORANGE}; font-size: 8px; color: ${C_GREY};">
-                            <b style="color: ${C_NAVY};">Nota del Sistema:</b> La documentación listada se encuentra respaldada y accesible desde la plataforma digital (Google Drive).
-                        </div>
+                    ${SectionTitle('Archivos y Anexos Adjuntos', C_ORANGE)}
+                    <table style="width: 100%; border-collapse: collapse; border: 1px solid #e2e8f0; margin-bottom: 10px; page-break-inside: auto;">
+                        <thead style="display: table-header-group;">
+                            <tr style="background: ${C_NAVY}; color: white; font-size: 10px; page-break-inside: avoid;">
+                                <th style="padding: 8px; text-align: left; border-right: 1px solid white; width: 85%;">Estructura de Directorios</th>
+                                <th style="padding: 8px; text-align: right; width: 15%;">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${filesTableHtml}
+                        </tbody>
+                    </table>
+                    
+                    <div style="padding: 10px; background: #fff7ed; border-left: 3px solid ${C_ORANGE}; font-size: 9px; color: ${C_GREY}; page-break-inside: avoid;">
+                        <b style="color: ${C_NAVY};">Nota del Sistema:</b> La documentación listada se encuentra respaldada y accesible desde la plataforma digital (Google Drive).
                     </div>
                 </div>
 
@@ -5089,19 +5115,19 @@
             container.innerHTML = htmlContent;
             container.style.display = 'block';
 
-            // Configuración para que se guarde perfecto en A4 con Calidad Ultra Nítida
+            // Configuración OPTIMIZADA: Permite ruptura por CSS y evita corte de líneas
             const opt = {
-                margin:       [0, 0, 0, 0],
+                margin:       [5, 0, 10, 0], // Márgenes: Arriba, Derecha, Abajo, Izquierda (10mm abajo para paginación limpia)
                 filename:     `Reporte de Avance del Proyecto_${p.code || 'S-C'}_${p.name}.pdf`,
-                image:        { type: 'png' }, // Usamos PNG (sin pérdida)
+                image:        { type: 'jpeg', quality: 0.98 }, // JPEG funciona mejor que PNG para PDFs multipágina largos
                 html2canvas:  { 
-                    scale: 6, // Renderizado extremo (6x) para eliminar cualquier borde pixelado
+                    scale: 4, 
                     useCORS: true, 
-                    backgroundColor: '#ffffff', // NOTA: letterRendering eliminado porque a veces causa desenfoque en textos
-                    dpi: 600, // DPI de alta fidelidad para impresión láser
-                    scrollY: 0 // Evita que el scroll de la pantalla mueva el canvas
+                    backgroundColor: '#ffffff',
+                    scrollY: 0 
                 },
-                pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }, // Previene saltos de página erráticos
+                // CLAVE: Remover 'avoid-all' que causa el espacio en blanco y usar 'css' y 'legacy'
+                pagebreak:    { mode: ['css', 'legacy'] }, 
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait', compress: true } 
             };
 
