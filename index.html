@@ -4821,20 +4821,37 @@
                 
                 <!-- ENCABEZADO -->
                 <div style="display: flex; background-color: white !important; color: black !important; border-bottom: 1.5px solid black; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
-                    <div style="width: 32%; padding: 6px 8px; font-size: 8px; font-weight: bold; box-sizing: border-box; background-color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                    <div style="width: 32%; padding: 6px 8px; font-size: 8px; font-weight: bold; box-sizing: border-box; display: flex; align-items: flex-end; padding-bottom: 6px; background-color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
                         Fases / Hitos Técnicos
                     </div>
                     <div style="width: 68%; display: flex; background-color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
-                        ${monthsList.map(m => `<div style="flex: 1; text-align: center; padding: 6px 0; font-size: 8px; font-weight: bold; box-sizing: border-box;">${m}</div>`).join('')}
+                        ${monthsList.map((m, i) => `
+                            <div style="flex: 1; display: flex; flex-direction: column; border-left: ${i === 0 ? 'none' : '1px solid #e5e7eb'}; box-sizing: border-box;">
+                                <div style="text-align: center; padding: 4px 0; font-size: 8px; font-weight: bold; border-bottom: 1px solid #e5e7eb;">${m}</div>
+                                <div style="display: flex; flex: 1; background-color: #fafafa !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                                    <div style="flex: 1; text-align: center; font-size: 5.5px; color: #6b7280; padding: 3px 0; border-right: 1px dashed #e5e7eb;">S1</div>
+                                    <div style="flex: 1; text-align: center; font-size: 5.5px; color: #6b7280; padding: 3px 0; border-right: 1px dashed #e5e7eb;">S2</div>
+                                    <div style="flex: 1; text-align: center; font-size: 5.5px; color: #6b7280; padding: 3px 0; border-right: 1px dashed #e5e7eb;">S3</div>
+                                    <div style="flex: 1; text-align: center; font-size: 5.5px; color: #6b7280; padding: 3px 0;">S4</div>
+                                </div>
+                            </div>
+                        `).join('')}
                     </div>
                 </div>
 
                 <!-- CUERPO DEL GANTT -->
                 <div style="position: relative; display: block; background-color: white;">
                     
-                    <!-- Grilla Global (Líneas verticales celestes eliminadas) -->
+                    <!-- Grilla Global -->
                     <div style="position: absolute; top: 0; left: 32%; right: 0; bottom: 0; display: flex; pointer-events: none; z-index: 0;">
-                        ${monthsList.map((_, i) => `<div style="flex: 1; box-sizing: border-box;"></div>`).join('')}
+                        ${monthsList.map((_, i) => `
+                            <div style="flex: 1; display: flex; border-left: ${i === 0 ? 'none' : '1px solid #e5e7eb'}; box-sizing: border-box;">
+                                <div style="flex: 1; border-right: 1px dashed #f8fafc;"></div>
+                                <div style="flex: 1; border-right: 1px dashed #f8fafc;"></div>
+                                <div style="flex: 1; border-right: 1px dashed #f8fafc;"></div>
+                                <div style="flex: 1;"></div>
+                            </div>
+                        `).join('')}
                     </div>
 
                     <!-- Filas -->
