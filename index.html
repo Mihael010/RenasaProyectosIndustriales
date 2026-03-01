@@ -181,7 +181,7 @@
         }
         @keyframes liquid-border { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
 
-        /* SIDEBAR (HOLOGRAPHIC COMMAND CENTER) - OPTIMIZADO */
+        /* SIDEBAR PROFESIONAL Y LIMPIO (HIGH-END UI) */
         #app-sidebar {
             transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease, transform 0.4s ease;
             width: var(--sidebar-width); 
@@ -190,17 +190,12 @@
             overflow-y: auto; 
             display: flex; 
             flex-direction: column; 
-            background: var(--bg-sidebar); 
-            border-right: 1px solid rgba(255,255,255,0.08); 
+            background: linear-gradient(180deg, var(--brand-dark) 0%, var(--brand-primary) 100%); 
+            border-right: 1px solid rgba(255,255,255,0.05); 
             z-index: 50;
-            box-shadow: 4px 0 32px rgba(0,0,0,0.3);
+            box-shadow: 4px 0 24px rgba(0,0,0,0.15);
             position: relative;
             height: 100vh;
-        }
-        #app-sidebar::before {
-            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 500px;
-            background: radial-gradient(ellipse at 50% 0%, rgba(6, 182, 212, 0.15) 0%, transparent 70%);
-            pointer-events: none; z-index: 0;
         }
 
         @media (min-width: 769px) {
@@ -213,77 +208,62 @@
         }
         
         .nav-link {
-            color: var(--text-sidebar); font-weight: 600; border-radius: 12px; transition: color 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.3s ease; 
-            display: flex; align-items: center; padding: 12px 16px; position: relative; overflow: hidden; margin: 4px 12px;
-            border: 1px solid transparent; z-index: 1; will-change: transform;
-        }
-        .nav-link::before {
-            content: ''; position: absolute; inset: 0;
-            background: radial-gradient(400px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 255, 255, 0.08), transparent 40%);
-            opacity: 0; transition: opacity 0.3s ease; z-index: -1; pointer-events: none;
+            color: #94A3B8; /* Slate 400 */
+            font-weight: 500; 
+            font-size: 13px;
+            border-radius: 10px; 
+            transition: all 0.2s ease; 
+            display: flex; 
+            align-items: center; 
+            padding: 10px 14px; 
+            margin: 2px 16px;
+            border: 1px solid transparent; 
+            z-index: 1; 
         }
         .nav-link:hover { 
-            color: #FFFFFF; border-color: rgba(255,255,255,0.1); 
-            transform: translateX(4px); box-shadow: inset 1px 0 0 rgba(255,255,255,0.2);
+            color: #FFFFFF; 
+            background: rgba(255,255,255,0.05);
+            border-color: rgba(255,255,255,0.02);
         }
-        .nav-link:hover::before { opacity: 1; }
         
-        /* Item Activo Holográfico */
+        /* Item Activo Elegante */
         .nav-active { 
-            background: linear-gradient(90deg, rgba(6, 182, 212, 0.15), transparent) !important; 
+            background: rgba(99, 102, 241, 0.1) !important; /* Fondo sutil indigo */
             color: #FFFFFF !important; 
-            border-left: 3px solid var(--brand-accent) !important;
-            border-radius: 4px 12px 12px 4px;
-            box-shadow: -4px 0 15px rgba(6, 182, 212, 0.3);
+            border: 1px solid rgba(99, 102, 241, 0.2) !important;
+            border-radius: 10px !important;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+            font-weight: 600;
         }
-        .nav-active::after {
-            content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
-            background: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent);
-            animation: fastSweep 3s ease-out infinite; z-index: -1; pointer-events: none;
-        }
-        .nav-active i { color: var(--brand-accent) !important; filter: drop-shadow(0 0 8px rgba(6, 182, 212, 0.8)); }
+        .nav-active i { color: #818CF8 !important; filter: drop-shadow(0 0 4px rgba(129, 140, 248, 0.3)); }
         
-        #sidebar-company-name { color: var(--text-sidebar-title) !important; text-shadow: 0 2px 8px rgba(0,0,0,0.8); letter-spacing: -0.5px; transition: color 0.3s ease; }
-        .sidebar-subtitle { color: var(--text-sidebar-subtitle) !important; transition: color 0.3s ease; }
+        #sidebar-company-name { color: #FFFFFF !important; text-shadow: none; font-weight: 800; letter-spacing: -0.5px; }
+        .sidebar-subtitle { color: #64748B !important; font-weight: 600; }
 
         .logo-container { 
-            background: var(--brand-logo-bg); 
-            border: 1px solid rgba(255,255,255,0.3);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.5);
-            will-change: transform;
+            background: linear-gradient(135deg, var(--brand-secondary), var(--brand-primary)); 
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            border-radius: 12px;
         }
 
         .sidebar-box-custom {
-            background: linear-gradient(135deg, var(--brand-sidebar-box), rgba(15,23,42,0.95));
+            background: rgba(15,23,42,0.6);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
             color: white;
-            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease, border-color 0.4s ease;
+            transition: all 0.2s ease;
             position: relative;
             overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.1);
-            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-            will-change: transform, box-shadow;
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
             cursor: pointer;
         }
-        .sidebar-box-custom::before {
-            content: ''; position: absolute; inset: 0;
-            background: radial-gradient(400px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 255, 255, 0.2), transparent 50%);
-            opacity: 0; transition: opacity 0.3s ease; z-index: 0; pointer-events: none;
-        }
-        .sidebar-box-custom::after {
-            content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
-            background: linear-gradient(to right, transparent, rgba(255,255,255,0.3), transparent);
-            transform: skewX(-20deg); transition: none; z-index: 1; pointer-events: none;
-        }
         .sidebar-box-custom:hover {
-            transform: translateY(-3px) scale(1.02); 
-            box-shadow: 0 15px 30px -5px rgba(6, 182, 212, 0.5), inset 0 1px 2px rgba(255,255,255,0.5);
-            border-color: rgba(6, 182, 212, 0.6);
+            transform: translateY(-2px); 
+            background: rgba(30,41,59,0.8);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            border-color: rgba(255,255,255,0.1);
         }
-        .sidebar-box-custom:hover::before { opacity: 1; }
-        .sidebar-box-custom:hover::after { animation: fastSweep 1.5s ease-out infinite; }
-        .sidebar-box-custom > * { position: relative; z-index: 10; pointer-events: none; }
-
-        @keyframes fastSweep { 0% { left: -100%; } 100% { left: 200%; } }
 
         /* OVERLAYS Y WIDGETS */
         .upload-overlay {
@@ -354,7 +334,9 @@
         .eng-label { font-size: 10px; font-weight: 900; color: #475569; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
 
         button { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); cursor: pointer; position: relative; overflow: hidden; }
+        button::after { content: ''; position: absolute; top: 50%; left: 50%; width: 0; height: 0; border-radius: 50%; background: rgba(255,255,255,0.3); transform: translate(-50%, -50%); transition: width 0.6s ease, height 0.6s ease; }
         button:hover { transform: translateY(-2px); box-shadow: var(--shadow-md), var(--shadow-glow); }
+        button:active::after { width: 300px; height: 300px; }
         button:active { transform: scale(0.96); }
 
         .status-led { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; position: relative; }
@@ -889,12 +871,12 @@
     </div>
 
     <div class="flex h-screen overflow-hidden">
-        <!-- Sidebar Navigation -->
-        <aside id="app-sidebar" class="bg-white border-r border-slate-200 whitespace-nowrap gpu-accelerated">
+        <!-- Sidebar Navigation Profesional -->
+        <aside id="app-sidebar" class="gpu-accelerated">
             <div class="w-72 flex flex-col h-full flex-shrink-0">
-                <div class="p-8">
-                    <div class="flex items-center space-x-3 mb-10 group cursor-pointer" onclick="nav('dashboard')">
-                        <div class="w-10 h-10 logo-container rounded-xl flex items-center justify-center shadow-lg overflow-hidden shrink-0 group-hover:scale-110 transition-all duration-300 relative scan-effect">
+                <div class="p-6 mt-2 mb-4">
+                    <div class="flex items-center space-x-4 cursor-pointer group" onclick="nav('dashboard')">
+                        <div class="w-11 h-11 logo-container flex items-center justify-center shrink-0 group-hover:scale-105 transition-all duration-300">
                             <svg viewBox="0 0 100 100" class="w-7 h-7 text-white">
                                 <ellipse cx="50" cy="50" rx="42" ry="24" fill="none" stroke="currentColor" stroke-width="4" transform="rotate(-5 50 50)"/>
                                 <circle cx="22" cy="65" r="13" fill="currentColor" />
@@ -904,37 +886,42 @@
                                 <circle cx="82" cy="32" r="13" fill="currentColor" />
                             </svg>
                         </div>
-                        <div class="flex-1">
-                            <h1 id="sidebar-company-name" class="text-lg font-black tracking-tighter leading-none truncate transition-colors text-gradient-glow">RENASA</h1>
-                            <p id="sidebar-subtitle" class="sidebar-subtitle text-[9px] font-black uppercase tracking-[0.15em] mt-1 whitespace-normal leading-tight">Proyectos Industriales</p>
+                        <div class="flex-1 min-w-0">
+                            <h1 id="sidebar-company-name" class="text-[17px] leading-tight truncate text-white transition-colors">RENASA</h1>
+                            <p id="sidebar-subtitle" class="sidebar-subtitle text-[10px] uppercase tracking-[0.1em] mt-0.5 truncate">Ingeniería y Activos</p>
                         </div>
                     </div>
                 </div>
 
-                <nav class="flex-1 px-4 space-y-1 overflow-y-auto custom-scrollbar">
-                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest px-4 mb-3">Módulos</p>
-                    <button onclick="nav('dashboard')" id="nav-dashboard" class="nav-link w-full nav-active"><i data-lucide="layout-dashboard" class="w-4 h-4 mr-3"></i> Dashboard</button>
-                    <button onclick="nav('projects')" id="nav-projects" class="nav-link w-full"><i data-lucide="briefcase" class="w-4 h-4 mr-3"></i> Portafolio</button>
-                    <button onclick="nav('kanban')" id="nav-kanban" class="nav-link w-full"><i data-lucide="columns" class="w-4 h-4 mr-3"></i> Kanban</button>
-                    <button onclick="nav('gantt')" id="nav-gantt" class="nav-link w-full"><i data-lucide="calendar-range" class="w-4 h-4 mr-3"></i> Cronograma</button>
-                    <button onclick="nav('critical')" id="nav-critical" class="nav-link w-full"><i data-lucide="alert-circle" class="w-4 h-4 mr-3"></i> Hitos Críticos</button>
-                    <button onclick="nav('analytics')" id="nav-analytics" class="nav-link w-full"><i data-lucide="bar-chart-big" class="w-4 h-4 mr-3"></i> Analítica BI</button>
-                    <button onclick="nav('staff')" id="nav-staff" class="nav-link w-full"><i data-lucide="users" class="w-4 h-4 mr-3"></i> Equipo Técnico</button>
+                <nav class="flex-1 py-2 overflow-y-auto custom-scrollbar flex flex-col gap-1">
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider px-6 mb-2 mt-2">Plataforma</p>
+                    <button onclick="nav('dashboard')" id="nav-dashboard" class="nav-link nav-active"><i data-lucide="layout-dashboard" class="w-4 h-4 mr-3"></i> Dashboard</button>
+                    <button onclick="nav('projects')" id="nav-projects" class="nav-link"><i data-lucide="briefcase" class="w-4 h-4 mr-3"></i> Portafolio</button>
+                    <button onclick="nav('kanban')" id="nav-kanban" class="nav-link"><i data-lucide="columns" class="w-4 h-4 mr-3"></i> Kanban</button>
+                    <button onclick="nav('gantt')" id="nav-gantt" class="nav-link"><i data-lucide="calendar-range" class="w-4 h-4 mr-3"></i> Cronograma</button>
+                    <button onclick="nav('critical')" id="nav-critical" class="nav-link"><i data-lucide="alert-circle" class="w-4 h-4 mr-3"></i> Hitos Críticos</button>
+                    <button onclick="nav('analytics')" id="nav-analytics" class="nav-link"><i data-lucide="bar-chart-big" class="w-4 h-4 mr-3"></i> Analítica BI</button>
+                    <button onclick="nav('staff')" id="nav-staff" class="nav-link"><i data-lucide="users" class="w-4 h-4 mr-3"></i> Equipo Técnico</button>
 
-                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest px-4 mt-8 mb-3">Iniciativas</p>
-                    <button onclick="nav('propose')" id="nav-propose" class="nav-link w-full"><i data-lucide="file-plus-2" class="w-4 h-4 mr-3"></i> Nueva Propuesta</button>
-                    <button onclick="nav('proposals')" id="nav-proposals" class="nav-link w-full"><i data-lucide="inbox" class="w-4 h-4 mr-3"></i> Bandeja</button>
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider px-6 mb-2 mt-6">Gestión Operativa</p>
+                    <button onclick="nav('propose')" id="nav-propose" class="nav-link"><i data-lucide="file-plus-2" class="w-4 h-4 mr-3"></i> Nueva Propuesta</button>
+                    <button onclick="nav('proposals')" id="nav-proposals" class="nav-link flex items-center justify-between">
+                        <div class="flex items-center"><i data-lucide="inbox" class="w-4 h-4 mr-3"></i> Bandeja</div>
+                        <span class="text-[9px] bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded-md font-mono border border-slate-700">1</span>
+                    </button>
 
-                    <div class="border-t border-slate-200 my-4"></div>
-                    <button onclick="nav('admin')" id="nav-admin" class="nav-link w-full"><i data-lucide="settings" class="w-4 h-4 mr-3"></i> Administrador</button>
+                    <div class="border-t border-slate-800/50 mx-6 my-4"></div>
+                    <button onclick="nav('admin')" id="nav-admin" class="nav-link"><i data-lucide="settings" class="w-4 h-4 mr-3"></i> Configuración</button>
                 </nav>
 
-                <div class="p-6">
-                    <div class="sidebar-box-custom rounded-xl p-3 flex items-center space-x-3 border border-white/20 shadow-xl hover:shadow-2xl transition-all group scan-effect">
-                        <div class="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center font-black text-white text-[10px] backdrop-blur-sm group-hover:scale-110 transition-transform">AD</div>
+                <div class="p-6 mt-auto">
+                    <div class="sidebar-box-custom p-3 flex items-center space-x-3 group" onclick="nav('admin')">
+                        <div class="w-9 h-9 bg-slate-800 rounded-lg flex items-center justify-center font-black text-indigo-400 text-xs border border-slate-700 group-hover:bg-indigo-500 group-hover:text-white transition-colors">AD</div>
                         <div class="flex-1 overflow-hidden">
-                            <p class="text-[10px] font-black text-white uppercase truncate">Proyectos - 2026</p>
+                            <p class="text-[11px] font-bold text-slate-200 truncate">Administrador</p>
+                            <p class="text-[9px] font-medium text-slate-500 truncate">Control Maestro</p>
                         </div>
+                        <i data-lucide="chevrons-up-down" class="w-4 h-4 text-slate-500 group-hover:text-slate-300 transition-colors"></i>
                     </div>
                 </div>
             </div>
